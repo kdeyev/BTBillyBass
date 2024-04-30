@@ -27,7 +27,7 @@
 #include <MX1508.h>
 
 MX1508 bodyMotor(6, 9); // Sets up an MX1508 controlled motor on PWM pins 6 and 9
-MX1508 mouthMotor(5, 3); // Sets up an MX1508 controlled motor on PWM pins 5 and 3
+MX1508 mouthMotor(3, 5); // Sets up an MX1508 controlled motor on PWM pins 5 and 3
 
 int soundPin = A0; // Sound input
 
@@ -59,11 +59,13 @@ void loop() {
   currentTime = millis(); //updates the time each time the loop is run
   updateSoundInput(); //updates the volume level detected
   SMBillyBass(); //this is the switch/case statement to control the state of the fish
+  // dalay(5000);
 }
 
 void SMBillyBass() {
   switch (fishState) {
     case 0: //START & WAITING
+      // Serial.println("Fish state START & WAITING");
       if (soundVolume > silence) { //if we detect audio input above the threshold
         if (currentTime > mouthActionTime) { //and if we haven't yet scheduled a mouth movement
           talking = true; //  set talking to true and schedule the mouth movement action
@@ -81,6 +83,7 @@ void SMBillyBass() {
       break;
 
     case 1: //TALKING
+      // Serial.println("Fish state TALKING");
       if (currentTime < mouthActionTime) { //if we have a scheduled mouthActionTime in the future....
         if (talking) { // and if we think we should be talking
           openMouth(); // then open the mouth and articulate the body
@@ -97,8 +100,9 @@ void SMBillyBass() {
       break;
 
     case 2: //GOTTA FLAP!
+      // Serial.println("Fish state FLAP");
       //Serial.println("I'm bored. Gotta flap.");
-      flap();
+      // flap();
       fishState = 0;
       break;
   }
@@ -106,15 +110,23 @@ void SMBillyBass() {
 
 int updateSoundInput() {
   soundVolume = analogRead(soundPin);
+  Serial.print(soundVolume);
+  Serial.println("");
+
+  // Serial.print("Sound Volume: ");
+  // Serial.print(soundVolume);
+  // Serial.println("");
 }
 
 void openMouth() {
+  // Serial.println("Open mouth");
   mouthMotor.halt(); //stop the mouth motor
   mouthMotor.setSpeed(220); //set the mouth motor speed
   mouthMotor.forward(); //open the mouth
 }
 
 void closeMouth() {
+  // Serial.println("Close mouth");
   mouthMotor.halt(); //stop the mouth motor
   mouthMotor.setSpeed(180); //set the mouth motor speed
   mouthMotor.backward(); // close the mouth
