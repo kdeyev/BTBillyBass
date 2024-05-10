@@ -31,7 +31,7 @@ MX1508 mouthMotor(3, 5); // Sets up an MX1508 controlled motor on PWM pins 5 and
 
 int soundPin = A0; // Sound input
 
-int silence = 12; // Threshold for "silence". Anything below this level is ignored.
+int silence = 20; // Threshold for "silence". Anything below this level is ignored.
 int bodySpeed = 0; // body motor speed initialized to 0
 int soundVolume = 0; // variable to hold the analog audio value
 int fishState = 0; // variable to indicate the state Billy is in
