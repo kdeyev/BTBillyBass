@@ -52,8 +52,6 @@ void setup() {
 //make sure both motor speeds are set to zero
   bodyMotor.setSpeed(0); 
   mouthMotor.setSpeed(0);
-  // bodyMotor.halt(); 
-  // mouthMotor.halt();
 
 //input mode for sound pin
   pinMode(soundPin, INPUT);
@@ -78,14 +76,12 @@ void SMBillyBass() {
           mouthActionTime = currentTime + 100;
           fishState = 1; // jump to a talking state
           digitalWrite(ledPin, HIGH);
-
         }
       } else if (currentTime > mouthActionTime + 100) { //if we're beyond the scheduled talking time, halt the motors
         bodyMotor.halt();
         mouthMotor.halt();
-        // mouthMotor.setSpeed(0);
       }
-      if (currentTime - lastActionTime > 1500) { //if Billy hasn't done anything in a while, we need to show he's bored
+      if (currentTime - lastActionTime > 5000) { //if Billy hasn't done anything in a while, we need to show he's bored
         lastActionTime = currentTime + floor(random(30, 60)) * 1000L; //you can adjust the numbers here to change how often he flaps
         fishState = 2; //jump to a flapping state!
         digitalWrite(ledPin, LOW);
@@ -112,7 +108,7 @@ void SMBillyBass() {
     case 2: //GOTTA FLAP!
       // Serial.println("Fish state FLAP");
       //Serial.println("I'm bored. Gotta flap.");
-      // flap();
+      flap();
       fishState = 0;
       break;
   }
@@ -131,7 +127,7 @@ int updateSoundInput() {
 void openMouth() {
   // Serial.println("Open mouth");
   mouthMotor.halt(); //stop the mouth motor
-  mouthMotor.setSpeed(220); //set the mouth motor speed
+  mouthMotor.setSpeed(180); //set the mouth motor speed
   mouthMotor.forward(); //open the mouth
 }
 
