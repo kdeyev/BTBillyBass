@@ -26,10 +26,13 @@
 
 #include <MX1508.h>
 
-MX1508 bodyMotor(3, 5); // Sets up an MX1508 controlled motor on PWM pins 6 and 9
-MX1508 mouthMotor(6, 9); // Sets up an MX1508 controlled motor on PWM pins 5 and 3
+MX1508 bodyMotor(3, 5); // Sets up an MX1508 controlled motor on PWM pins 3 and 5
+MX1508 mouthMotor(6, 9); // Sets up an MX1508 controlled motor on PWM pins 6 and 9
 
-int ledPin = 12;
+int ledPin4 = 2;
+int ledPin3 = 11;
+int ledPin2 = 4;
+int ledPin1 = 12;
 
 int soundPin = A0; // Sound input
 
@@ -46,9 +49,23 @@ long mouthActionTime;
 long bodyActionTime;
 long lastActionTime;
 
+long nextBlinkigTime;
+long blinkingState = 1;
+
+
 void setup() {
-  pinMode(ledPin, OUTPUT);
-  
+  // pinMode(ledPin, OUTPUT);
+
+  pinMode(ledPin1, OUTPUT);
+  pinMode(ledPin2, OUTPUT);
+  pinMode(ledPin3, OUTPUT);
+  pinMode(ledPin4, OUTPUT);
+
+  digitalWrite(ledPin1, LOW); 
+  digitalWrite(ledPin2, LOW); 
+  digitalWrite(ledPin3, LOW); 
+  digitalWrite(ledPin4, LOW); 
+ 
 //make sure both motor speeds are set to zero
   bodyMotor.setSpeed(0); 
   mouthMotor.setSpeed(0);
@@ -62,6 +79,7 @@ void setup() {
 void loop() {
   currentTime = millis(); //updates the time each time the loop is run
   updateSoundInput(); //updates the volume level detected
+  blink();
   SMBillyBass(); //this is the switch/case statement to control the state of the fish
   // dalay(5000);
 }
@@ -75,7 +93,7 @@ void SMBillyBass() {
           talking = true; //  set talking to true and schedule the mouth movement action
           mouthActionTime = currentTime + 100;
           fishState = 1; // jump to a talking state
-          digitalWrite(ledPin, HIGH);
+          // blinkingState = 1;
         }
       } else if (currentTime > mouthActionTime + 100) { //if we're beyond the scheduled talking time, halt the motors
         bodyMotor.halt();
@@ -84,7 +102,7 @@ void SMBillyBass() {
       if (currentTime - lastActionTime > 5000) { //if Billy hasn't done anything in a while, we need to show he's bored
         lastActionTime = currentTime + floor(random(5, 15)) * 1000L; //you can adjust the numbers here to change how often he flaps
         fishState = 2; //jump to a flapping state!
-        digitalWrite(ledPin, LOW);
+        // blinkingState = 0;
       }
       break;
 
@@ -103,7 +121,7 @@ void SMBillyBass() {
         talking = false;
         fishState = 0; //jump back to waiting state
       }
-      break;
+break;
 
     case 2: //GOTTA FLAP!
       // Serial.println("Fish state FLAP");
@@ -116,6 +134,7 @@ void SMBillyBass() {
 
 int updateSoundInput() {
   soundVolume = analogRead(soundPin);
+  // soundVolume = sin(currentTime/100.)*100;
   Serial.print(soundVolume);
   Serial.println("");
 
@@ -180,6 +199,67 @@ void articulateBody(bool talking) { //function for articulating the body
   }
 }
 
+void blink() {
+  if (blinkingState == 0) {
+      digitalWrite(ledPin1, LOW); 
+      digitalWrite(ledPin2, LOW); 
+      digitalWrite(ledPin3, LOW); 
+      digitalWrite(ledPin4, LOW); 
+    return;
+  }
+  
+  if (currentTime > nextBlinkigTime) {
+    if (blinkingState == 1) {
+      digitalWrite(ledPin1, HIGH);
+      nextBlinkigTime = currentTime + 100;
+      blinkingState = 2;
+    }
+    else if (blinkingState == 2) {
+      digitalWrite(ledPin2, HIGH);
+      nextBlinkigTime = currentTime + 100;
+      blinkingState = 3;
+    }
+    else if (blinkingState == 3) {
+      digitalWrite(ledPin3, HIGH);
+      nextBlinkigTime = currentTime + 200;
+      blinkingState = 4;
+    }
+    else if (blinkingState == 4) {
+      digitalWrite(ledPin4, HIGH);
+      nextBlinkigTime = currentTime + 200;
+      blinkingState = 5;
+    }
+    else if (blinkingState == 5) {
+      digitalWrite(ledPin4, LOW);
+      nextBlinkigTime = currentTime + 200;
+      blinkingState = 6;
+    }
+    else if (blinkingState == 6) {
+      digitalWrite(ledPin3, LOW);
+      nextBlinkigTime = currentTime + 200;
+      blinkingState = 7;
+    }
+    else if (blinkingState == 7) {
+      digitalWrite(ledPin3, LOW);
+      nextBlinkigTime = currentTime + 200;
+      blinkingState = 8;
+    }
+    else if (blinkingState == 8) {
+      digitalWrite(ledPin2, LOW);
+      nextBlinkigTime = currentTime + 200;
+      blinkingState = 9;
+    }
+    else if (blinkingState == 9) {
+      digitalWrite(ledPin1, LOW);
+      nextBlinkigTime = currentTime + 100;
+      blinkingState = 10;
+    }
+    else if (blinkingState == 10) {
+      nextBlinkigTime = currentTime + 5000;
+      blinkingState = 1;
+    }
+  }
+}
 
 void flap() {
   bodyMotor.setSpeed(180); //set the body motor to full speed
