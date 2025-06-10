@@ -52,10 +52,18 @@ long lastActionTime;
 long nextBlinkigTime;
 long blinkingState = 1;
 
+long eyeButtonPin = 7;
+long bodyButtonPin = 8;
+int eyeButtonState = 0;  
+int lastEyeButtonState = 0; 
+int bodyButtonState = 0;  
+int lastBodyButtonState = 0; 
+
+bool blinkingIsEnabled = true;
+bool bodyIsEnabled = true;
+
 
 void setup() {
-  // pinMode(ledPin, OUTPUT);
-
   pinMode(ledPin1, OUTPUT);
   pinMode(ledPin2, OUTPUT);
   pinMode(ledPin3, OUTPUT);
@@ -65,6 +73,10 @@ void setup() {
   digitalWrite(ledPin2, LOW); 
   digitalWrite(ledPin3, LOW); 
   digitalWrite(ledPin4, LOW); 
+
+  pinMode(eyeButtonPin, INPUT);
+  pinMode(bodyButtonPin, INPUT);
+
  
 //make sure both motor speeds are set to zero
   bodyMotor.setSpeed(0); 
@@ -79,6 +91,7 @@ void setup() {
 void loop() {
   currentTime = millis(); //updates the time each time the loop is run
   updateSoundInput(); //updates the volume level detected
+  updateButtons();
   blink();
   SMBillyBass(); //this is the switch/case statement to control the state of the fish
   // dalay(5000);
@@ -93,7 +106,6 @@ void SMBillyBass() {
           talking = true; //  set talking to true and schedule the mouth movement action
           mouthActionTime = currentTime + 100;
           fishState = 1; // jump to a talking state
-          // blinkingState = 1;
         }
       } else if (currentTime > mouthActionTime + 100) { //if we're beyond the scheduled talking time, halt the motors
         bodyMotor.halt();
@@ -102,7 +114,6 @@ void SMBillyBass() {
       if (currentTime - lastActionTime > 5000) { //if Billy hasn't done anything in a while, we need to show he's bored
         lastActionTime = currentTime + floor(random(5, 15)) * 1000L; //you can adjust the numbers here to change how often he flaps
         fishState = 2; //jump to a flapping state!
-        // blinkingState = 0;
       }
       break;
 
@@ -121,7 +132,7 @@ void SMBillyBass() {
         talking = false;
         fishState = 0; //jump back to waiting state
       }
-break;
+      break;
 
     case 2: //GOTTA FLAP!
       // Serial.println("Fish state FLAP");
@@ -132,15 +143,32 @@ break;
   }
 }
 
+void updateButtons() {
+  // read the pushbutton input pin:
+  eyeButtonState = digitalRead(eyeButtonPin);
+  bodyButtonState = digitalRead(bodyButtonPin);
+
+  if (eyeButtonState != lastEyeButtonState && eyeButtonState) {
+    blinkingIsEnabled = !blinkingIsEnabled;
+    Serial.println("blinkingIsEnabled: ");
+    Serial.println(blinkingIsEnabled);
+  }
+  lastEyeButtonState = eyeButtonState;
+
+
+  if (bodyButtonState != lastBodyButtonState && bodyButtonState) {
+    bodyIsEnabled = !bodyIsEnabled;
+    Serial.println("bodyIsEnabled: ");
+    Serial.println(bodyIsEnabled);
+  }
+  lastBodyButtonState = bodyButtonState;
+
+}
+
 int updateSoundInput() {
   soundVolume = analogRead(soundPin);
-  // soundVolume = sin(currentTime/100.)*100;
   Serial.print(soundVolume);
   Serial.println("");
-
-  // Serial.print("Sound Volume: ");
-  // Serial.print(soundVolume);
-  // Serial.println("");
 }
 
 void openMouth() {
@@ -158,22 +186,22 @@ void closeMouth() {
 }
 
 void articulateBody(bool talking) { //function for articulating the body
-  if (talking) { //if Billy is talking
+  if (talking && bodyIsEnabled) { //if Billy is talking
     if (currentTime > bodyActionTime) { // and if we don't have a scheduled body movement
       int r = floor(random(0, 8)); // create a random number between 0 and 7)
       if (r < 1) {
         bodySpeed = 0; // don't move the body
-        bodyActionTime = currentTime + floor(random(100, 500)); //schedule body action for .5 to 1 seconds from current time
+        bodyActionTime = currentTime + floor(random(5000, 10000)); //schedule body action for .5 to 1 seconds from current time
         bodyMotor.forward(); //move the body motor to raise the head
 
       } else if (r < 3) {
         bodySpeed = 150; //move the body slowly
-        bodyActionTime = currentTime + floor(random(100, 500)); //schedule body action for .5 to 1 seconds from current time
+        bodyActionTime = currentTime + floor(random(500, 1000)); //schedule body action for .5 to 1 seconds from current time
         bodyMotor.forward(); //move the body motor to raise the head
 
       } else if (r == 4) {
         bodySpeed = 200;  // move the body medium speed
-        bodyActionTime = currentTime + floor(random(100, 500)); //schedule body action for .5 to 1 seconds from current time
+        bodyActionTime = currentTime + floor(random(500, 1000)); //schedule body action for .5 to 1 seconds from current time
         bodyMotor.forward(); //move the body motor to raise the head
 
       } else if ( r == 5 ) {
@@ -181,7 +209,7 @@ void articulateBody(bool talking) { //function for articulating the body
         bodyMotor.halt(); //stop the body motor (to keep from violent sudden direction changes)
         bodyMotor.setSpeed(255); //set the body motor to full speed
         bodyMotor.backward(); //move the body motor to raise the tail
-        bodyActionTime = currentTime + floor(random(300, 600)); //schedule body action for .9 to 1.2 seconds from current time
+        bodyActionTime = currentTime + floor(random(900, 1200)); //schedule body action for .9 to 1.2 seconds from current time
       }
       else {
         bodySpeed = 255; // move the body full speed
@@ -200,7 +228,7 @@ void articulateBody(bool talking) { //function for articulating the body
 }
 
 void blink() {
-  if (blinkingState == 0) {
+  if (blinkingState == 0 || blinkingIsEnabled == false) {
       digitalWrite(ledPin1, LOW); 
       digitalWrite(ledPin2, LOW); 
       digitalWrite(ledPin3, LOW); 
