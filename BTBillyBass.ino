@@ -188,23 +188,23 @@ void closeMouth() {
 void articulateBody(bool talking) { //function for articulating the body
   if (talking && bodyIsEnabled) { //if Billy is talking
     if (currentTime > bodyActionTime) { // and if we don't have a scheduled body movement
-      int r = floor(random(0, 8)); // create a random number between 0 and 7)
-      if (r < 1) {
+      int r = floor(random(1, 5)); // create a random number between 0 and 7)
+      if (r == 1) {
         bodySpeed = 0; // don't move the body
         bodyActionTime = currentTime + floor(random(5000, 10000)); //schedule body action for .5 to 1 seconds from current time
         bodyMotor.forward(); //move the body motor to raise the head
 
-      } else if (r < 3) {
+      } else if (r == 2) {
         bodySpeed = 150; //move the body slowly
         bodyActionTime = currentTime + floor(random(500, 1000)); //schedule body action for .5 to 1 seconds from current time
         bodyMotor.forward(); //move the body motor to raise the head
 
-      } else if (r == 4) {
+      } else if (r == 3) {
         bodySpeed = 200;  // move the body medium speed
         bodyActionTime = currentTime + floor(random(500, 1000)); //schedule body action for .5 to 1 seconds from current time
         bodyMotor.forward(); //move the body motor to raise the head
 
-      } else if ( r == 5 ) {
+      } else if (r == 4) {
         bodySpeed = 0; //set body motor speed to 0
         bodyMotor.halt(); //stop the body motor (to keep from violent sudden direction changes)
         bodyMotor.setSpeed(255); //set the body motor to full speed
